@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xml>
+	<Name value="OcbPortalsCore" />
+	<DisplayName value="OCB Advanced Pin Recipes" />
+	<Description value="Pin (multiple) recipes on your UI so you don't forget the ingredients." />
+	<Website value="https://github.com/OCB7D2D/OcbPortalsCore" />
+	<Author value="ocbMaurice" />
+	<Version value="0.8.5" />
+</xml>

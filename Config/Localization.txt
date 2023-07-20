@@ -1,0 +1,5 @@
+Key,english
+teleportto,"Teleport To {0}"
+portal_not_configured,"Not Configured"
+portal_configure,"Not Connected"
+portalActivate, "Activate Portal"

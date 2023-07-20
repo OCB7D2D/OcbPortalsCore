@@ -1,0 +1,22 @@
+<configs>
+	<append xpath="/buffs">
+
+		<buff name="buffTeleportCooldown" hidden="true">
+			<stack_type value="ignore"/>
+			<duration value="5"/>
+		</buff>
+
+	</append>
+
+	<set xpath="buffs/buff[@name='buffTeleportCooldown']/duration/@value">3</set>
+<!--
+	<append xpath="buffs/buff[@name='buffTeleportCooldown']">
+			  <effect_group name="guppy Effect">
+				  <requirement name="EntityTagCompare" tags="player"/>
+				  <triggered_effect trigger="onSelfBuffUpdate" action="AttachPrefabToEntity" prefab="#@modfolder:Resources/gupTeleportRide.unity3d?guppyTeleportRide" parent_transform="CameraNode" local_offset="0,0,-1" local_rotation="0,180,0"/>
+				  <triggered_effect trigger="onSelfBuffFinish" action="RemovePrefabFromEntity" prefab="guppyTeleportRide" />    
+				  <triggered_effect trigger="onSelfBuffRemove" action="RemovePrefabFromEntity" prefab="guppyTeleportRide" />
+			  </effect_group>			
+	</append>
+-->
+</configs>
