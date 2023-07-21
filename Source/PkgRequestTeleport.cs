@@ -4,21 +4,23 @@ using UnityEngine;
 public class PkgRequestTeleport : NetPackage
 {
 
+    // Make sure we teleport in the center of the destination block
     private Vector3 TeleportOffset = new Vector3(0.5f, 0f, 0.5f);
 
-    private Vector3i Position;
-    private int Delay;
+    // Block position to teleport player to
+    private Vector3i Position = Vector3i.invalid;
+
+    // Minimum delay to wait in seconds
+    private float Delay = 0;
 
     // Observer is only active before teleport action
     private ChunkManager.ChunkObserver Observer;
 
-    public override int GetLength()
-    {
-        return 42;
-    }
+    // ####################################################################
+    // ####################################################################
 
     public PkgRequestTeleport Setup(
-      Vector3i position, int delay)
+      Vector3i position, float delay)
     {
         Position = position;
         Delay = delay;
@@ -28,7 +30,7 @@ public class PkgRequestTeleport : NetPackage
     // ####################################################################
     // ####################################################################
 
-    private void ClearOptionalChunkObserver(GameManager gm)
+    private void ClearChunkObserver(GameManager gm)
     {
         if (Observer == null) return;
         gm.RemoveChunkObserver(Observer);
@@ -42,11 +44,12 @@ public class PkgRequestTeleport : NetPackage
     public override void ProcessPackage(World world, GameManager gm)
     {
         // Try to find next portal in the list of same group as ourself
-        if (PortalManager.Instance.GetNextPosition(Position) is PortalData next)
+        if (PortalManager.Instance.GetNextPosition(Position) is PortalBlockData next)
         {
-            var position = next.Position + TeleportOffset;
+            var dst = next.Position + TeleportOffset;
             // Start coroutine to wait for delay and chunk load
-            gm.StartCoroutine(TeleportWhenLoaded(world, gm, position, 0));
+            gm.StartCoroutine(TeleportWhenLoaded(
+                world, gm, Position, dst, Delay));
         }
     }
 
@@ -54,7 +57,8 @@ public class PkgRequestTeleport : NetPackage
     // ####################################################################
 
     // Wait for chunk to load via chunk observer if required
-    private IEnumerator TeleportWhenLoaded(World world, GameManager gm, Vector3 dst, float delay)
+    private IEnumerator TeleportWhenLoaded(World world,
+        GameManager gm, Vector3i src, Vector3 dst, float delay)
     {
         if (Observer != null) Log.Error("Pending Observer?");
         // Check if the chunk needs to be loaded first
@@ -73,11 +77,12 @@ public class PkgRequestTeleport : NetPackage
             if (world.GetChunkFromWorldPos(World.worldToBlockPos(dst)) != null)
             {
                 // Create package to inform user to teleport to new position
-                var pkg = NetPackageManager.GetPackage<NetPackageTeleportPlayer>().Setup(dst, null);
+                var pkg = NetPackageManager.GetPackage<PkgExecuteTeleport>();
+                pkg.Setup(src, dst, null, false);
                 // Process right away if there is not sender (executed in SP)
                 if (Sender != null) Sender.SendPackage(pkg);
                 else pkg.ProcessPackage(world, gm);
-                ClearOptionalChunkObserver(gm);
+                ClearChunkObserver(gm);
                 // Stop coroutine
                 yield break;
             }
@@ -88,7 +93,7 @@ public class PkgRequestTeleport : NetPackage
         }
         // We gave up, chunk failed to load?
         Log.Error("Chunk failed to load, give up");
-        ClearOptionalChunkObserver(gm);
+        ClearChunkObserver(gm);
     }
 
     // ####################################################################
@@ -97,7 +102,7 @@ public class PkgRequestTeleport : NetPackage
     public override void read(PooledBinaryReader br)
     {
         Position = StreamUtils.ReadVector3i(br);
-        Delay = br.ReadInt32();
+        Delay = br.ReadSingle();
     }
 
     public override void write(PooledBinaryWriter bw)
@@ -106,6 +111,8 @@ public class PkgRequestTeleport : NetPackage
         StreamUtils.Write(bw, Position);
         bw.Write(Delay);
     }
+
+    public override int GetLength() => 50;
 
     // ####################################################################
     // ####################################################################

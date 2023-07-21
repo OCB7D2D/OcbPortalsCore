@@ -1,17 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 public abstract class PersistedData<T> : SingletonInstance<T> where T : new()
 {
+
+    // ####################################################################
+    // ####################################################################
 
     // Some basic info we need to store data
     public abstract string GetBackupPath();
     public abstract string GetStoragePath();
     public abstract string GetThreadKey();
+
+    // ####################################################################
+    // ####################################################################
 
     // Implement your write functionality
     public abstract void Write(BinaryWriter bw);
@@ -19,8 +21,14 @@ public abstract class PersistedData<T> : SingletonInstance<T> where T : new()
     // Implement your read functionality
     public abstract void Read(BinaryReader br);
 
+    // ####################################################################
+    // ####################################################################
+
     // Temporary thread object when running
     private ThreadManager.ThreadInfo ThreadInfo;
+
+    // ####################################################################
+    // ####################################################################
 
     public bool IsSaveThreadRunning()
     {
@@ -63,6 +71,9 @@ public abstract class PersistedData<T> : SingletonInstance<T> where T : new()
         return -1;
     }
 
+    // ####################################################################
+    // ####################################################################
+
     protected virtual void CleanupInstance()
     {
         if (SingletonMonoBehaviour<ConnectionManager>.Instance.IsServer)
@@ -76,12 +87,16 @@ public abstract class PersistedData<T> : SingletonInstance<T> where T : new()
         }
     }
 
+    // ####################################################################
+    // ####################################################################
+
     public void LoadPersistedData()
     {
         string storage = GetStoragePath();
         // if (!File.Exists(storage)) return;
         try
         {
+            Log.Out("Load Portals from {0}", storage);
             using (FileStream fileStream = File.OpenRead(storage))
             {
                 using (PooledBinaryReader pooledBinaryReader = MemoryPools.poolBinaryReader.AllocSync(false))
@@ -105,5 +120,8 @@ public abstract class PersistedData<T> : SingletonInstance<T> where T : new()
             }
         }
     }
+
+    // ####################################################################
+    // ####################################################################
 
 }

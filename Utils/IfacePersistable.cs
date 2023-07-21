@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-public interface IfacePersistable
+public interface IFacePersistable
 {
 
     string GetBackupPath();

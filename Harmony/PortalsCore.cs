@@ -4,12 +4,18 @@ using System.Reflection;
 public class PortalsCore : IModApi
 {
 
+    // ####################################################################
+    // ####################################################################
+
     public void InitMod(Mod mod)
     {
         Log.Out("OCB Harmony Patch: " + GetType().ToString());
         Harmony harmony = new Harmony(GetType().ToString());
         harmony.PatchAll(Assembly.GetExecutingAssembly());
     }
+
+    // ####################################################################
+    // ####################################################################
 
     // Hook when `PowerManger` is loaded
     [HarmonyPatch(typeof(PowerManager), "LoadPowerManager")]
@@ -31,18 +37,25 @@ public class PortalsCore : IModApi
         }
     }
 
+    // ####################################################################
+    // ####################################################################
 
-    // Register event handlers when game starts
-    /*[HarmonyPatch(typeof(GameStateManager))]
-    [HarmonyPatch("StartGame")]
-    public class GameStateManager_StartGame
+    // Hook when `PowerManger` is cleaned up
+    [HarmonyPatch(typeof(TileEntitySign), "SetText")]
+    public class TileEntitySignSetTextPatch
     {
-        static void Postfix()
+        public static void Postfix(TileEntitySign __instance, string _text, bool _syncData)
         {
-            XUi xui = LocalPlayerUI.GetUIForPrimaryPlayer()?.xui;
-            // Force instance; player wouldn't be known otherwise
-            PortalsCoreManager.Instance.AttachPlayerAndInventory(xui);
+            if (!ConnectionManager.Instance.IsServer) return;
+            var position = __instance.ToWorldPos();
+            PortalBlockData portal = PortalManager.Instance.GetPortalAt(position + Vector3i.down);
+            if (portal == null) portal = PortalManager.Instance.GetPortalAt(position);
+            Log.Out("Update portal group at {0} to {1} (sync: {2})", portal, _text, _syncData);
+            if (portal != null) portal.Group = _text;
         }
-    }*/
+    }
+
+    // ####################################################################
+    // ####################################################################
 
 }

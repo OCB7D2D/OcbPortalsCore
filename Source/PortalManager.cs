@@ -2,38 +2,6 @@
 using System.IO;
 using System.Linq;
 
-public class PortalItem
-{
-    public Vector3i Position;
-    public string Source;
-    public string Destination;
-    public string Prefab;
-    public PortalItem(Vector3i position, string signData)
-    {
-        Position = position;
-        Source = signData;
-        Destination = signData;
-        foreach (var config in signData.Split(','))
-        {
-            if (config.StartsWith("source="))
-                Source = config.Split('=')[1];
-            if (config.StartsWith("destination="))
-                Destination = config.Split('=')[1];
-            if (config.StartsWith("prefab="))
-                Prefab = config.Split('=')[1];
-        }
-
-    }
-    public PrefabInstance GetPrefabInstance()
-    {
-        if (string.IsNullOrEmpty(Prefab)) return null;
-
-        foreach (var prefabInstance in GameManager.Instance.GetDynamicPrefabDecorator().allPrefabs.Where(n => n.name.StartsWith(Prefab)))
-            return prefabInstance;
-
-        return null;
-    }
-}
 public class PortalManager : PersistedData<PortalManager>
 {
 
@@ -45,9 +13,9 @@ public class PortalManager : PersistedData<PortalManager>
     public static byte FileVersion = 1;
 
     public override string GetStoragePath() => string.Format(
-        "{0}/ocb-portal-manager.dat", "." /* GameIO.GetSaveGameDir() */);
+        "{0}/ocb-portal-manager.dat", GameIO.GetSaveGameDir());
     public override string GetBackupPath() => string.Format(
-        "{0}/ocb-portal-manager.dat.bak", "." /* GameIO.GetSaveGameDir() */);
+        "{0}/ocb-portal-manager.dat.bak", GameIO.GetSaveGameDir());
     public override string GetThreadKey() => "silent_ocbPortalManagerDataSave";
 
     // ####################################################################
@@ -73,7 +41,7 @@ public class PortalManager : PersistedData<PortalManager>
     // Use a dumb and unoptimized structure for now
     // Makes it easier to keep everything in sync
     // May start to regress performance around 100 portals
-    private readonly List<PortalData> Portals = new List<PortalData>();
+    private readonly List<PortalBlockData> Portals = new List<PortalBlockData>();
 
     // ####################################################################
     // ####################################################################
@@ -84,8 +52,10 @@ public class PortalManager : PersistedData<PortalManager>
         int count = br.ReadInt32();
         for (int i = 0; i < count; i++)
         {
-            var data = new PortalData();
+            var data = new PortalBlockData();
             data.Read(br);
+            Log.Out("LOADED PORTAL at {0} => {1}",
+                data.Position, data.Group);
             Portals.Add(data);
         }
     }
@@ -101,30 +71,32 @@ public class PortalManager : PersistedData<PortalManager>
     // ####################################################################
     // ####################################################################
 
-    public void AddPortal(Vector3i position, BlockValue bv)
+    public void AddPortal(Vector3i position, string group = null)
     {
-        var block = bv.Block as BlockPortal;
+        // var block = bv.Block as BlockPortal;
         if (Portals.Any(x => x.Position == position))
             Log.Error("Portal Manager has duplicate entry");
-        else Portals.Add(new PortalData(position, block.GetPortalGroup()));
+        else Portals.Add(new PortalBlockData(position, group));
+        Log.Out("Added portal {0}", position);
     }
 
     public void RemovePortal(Vector3i position, BlockValue bv)
-    {
-        Portals.RemoveAll(x => x.Position == position);
-    }
+        => Portals.RemoveAll(x => x.Position == position);
 
     // ####################################################################
     // Get next portal position for portal at `position`
     // ####################################################################
 
-    public PortalData GetNextPosition(Vector3i position)
+    public PortalBlockData GetNextPosition(Vector3i position)
     {
+        Log.Out("Search for {0} in {1}", position, Portals.Count);
         // Find the current portal at `position` in the list
         for (int i = 0; i < Portals.Count; i++)
         {
+            Log.Out("Has {0}", Portals[i].Position);
             if (Portals[i].Position == position)
             {
+                Log.Out("Search Next Teleport for {0}", Portals[i].Group);
                 // Search for next portal with the same group
                 for (int n = i + 1; n < Portals.Count; n++)
                 {
@@ -141,6 +113,9 @@ public class PortalManager : PersistedData<PortalManager>
         return null;
     }
 
+    public PortalBlockData GetPortalAt(Vector3i position)
+        => Portals.Find(x => x.Position == position);
+ 
     // ####################################################################
     // ####################################################################
 

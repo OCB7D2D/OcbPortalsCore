@@ -22,11 +22,18 @@ if not "%1"=="" (
 echo create %VERSION%
 
 xcopy *.xml build\%NAME%\
-xcopy *.md build\%NAME%\
+REM xcopy *.md build\%NAME%\
 xcopy *.dll build\%NAME%\
 xcopy Config build\%NAME%\Config\ /S
 xcopy Resources build\%NAME%\Resources\ /S
 xcopy UIAtlases build\%NAME%\UIAtlases\ /S
+
+xcopy Harmony build\%NAME%\Harmony\ /S
+xcopy Source build\%NAME%\Source\ /S
+xcopy Utils build\%NAME%\Utils\ /S
+
+xcopy PortalsCore.sln build\%NAME%\
+xcopy PortalsCore.csproj build\%NAME%\
 
 REM xcopy BepInEx build\%NAME%\BepInEx\ /S
 REM xcopy patchers\*.dll build\%NAME%\patchers\

@@ -96,16 +96,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Old\BlockPoweredPortalOld.cs" />
+    <Compile Include="Harmony\ElectricityMultiDimFix.cs" />
+    <Compile Include="Source\BlockPortalPoweredSigned.cs" />
+    <Compile Include="Source\BlockPortalPowered.cs" />
+    <Compile Include="Source\BlockPortalSigned.cs" />
     <Compile Include="Source\BlockPortal.cs" />
+    <Compile Include="Source\PkgExecuteTeleport.cs" />
     <Compile Include="Source\PkgRequestTeleport.cs" />
-    <Compile Include="Source\PortalData.cs" />
+    <Compile Include="Source\PortalBlockData.cs" />
     <Compile Include="Source\PortalManager.cs" />
-    <Compile Include="Old\PortalManagerOld.cs" />
     <Compile Include="Harmony\PortalsCore.cs" />
     <Compile Include="Harmony\AssemblyInfo.cs" />
-    <Compile Include="Old\TileEntityPoweredPortalOld.cs" />
-    <Compile Include="Utils\IfacePersistable.cs" />
+    <Compile Include="Utils\HelperBlockPortal.cs" />
+    <Compile Include="Utils\HelperBlockSigned.cs" />
+    <Compile Include="Utils\OcbBlockHelper.cs" />
+    <Compile Include="Utils\IFacePersistable.cs" />
     <Compile Include="Utils\PersistedData.cs" />
     <Compile Include="Utils\SingletonInstance.cs" />
   </ItemGroup>
